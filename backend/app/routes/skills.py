@@ -1,5 +1,5 @@
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
@@ -113,7 +113,7 @@ async def delete_skill_offered(
     skill_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
-) -> Any:
+) -> Response:
     """
     Delete a skill offered
     """
@@ -130,8 +130,8 @@ async def delete_skill_offered(
     
     db.delete(db_skill)
     db.commit()
-    
-    return None
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # Skills wanted routes
@@ -227,9 +227,9 @@ async def delete_skill_wanted(
     skill_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
-) -> Any:
+) -> Response:
     """
-    Delete a skill wanted
+    Delete a skill wanted (only by the user who added it)
     """
     db_skill = db.query(SkillWanted).filter(
         SkillWanted.id == skill_id,
@@ -244,8 +244,9 @@ async def delete_skill_wanted(
     
     db.delete(db_skill)
     db.commit()
-    
-    return None
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 
 
 # Skill search

@@ -1,6 +1,6 @@
 from typing import Any, List
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session, joinedload
 
 from ..core.auth import get_current_user
@@ -235,7 +235,7 @@ async def delete_swap(
     swap_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
-) -> Any:
+) -> Response:
     """
     Delete a swap (only if it's pending and you're the requester)
     """
@@ -244,17 +244,18 @@ async def delete_swap(
         Swap.requester_id == current_user.id,
         Swap.status == SwapStatus.PENDING
     ).first()
-    
+
     if not swap:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Swap not found, not owned by you, or not in pending status"
         )
-    
+
     db.delete(swap)
     db.commit()
-    
-    return None
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)  # ✅ MUST return explicit Response
+
 
 
 # Feedback routes
